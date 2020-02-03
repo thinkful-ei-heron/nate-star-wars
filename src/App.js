@@ -1,26 +1,70 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Header from './Components/Header';
+import SearchBar from './Components/SearchBar';
+import search from './api';
+import AppContext from './AppContext'
+import ResultList from './Components/Result-List'
+import { BrowserRouter } from 'react-router-dom';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+function Spinner() {
+const spin = document.getElementById("spinner");
+    spin.className="show";
 }
 
-export default App;
+function HideSpinner() {
+  const spin = document.getElementById("spinner");
+  spin.className = spin.className.replace("show",'');
+}
+
+
+class App extends React.Component{
+
+  state = { 
+    result: [],
+    loading: false, 
+    error: null,
+    boolean: false
+  }
+
+  handleSearchChange = (searchWord, category) => { 
+    this.setState({loading: true})
+    Spinner();
+    search(category,searchWord)
+
+      .then(setTimeout(() => { 
+        HideSpinner()
+      },1000))
+      .then(data => 
+        this.setState({
+        result: data.results,
+        boolean: true
+      }))
+      .catch(ERROR => console.log(ERROR))
+    }
+
+  render() { 
+    const value = {
+      result: this.state.result, 
+      handleSearchChange: this.handleSearchChange
+    }
+    return(
+      <BrowserRouter>
+        <AppContext.Provider value={value}>
+        <div> 
+          <Header />
+          <main>
+            <SearchBar /> 
+            <div id="spinner" className=""></div>
+          {this.state.boolean ?<ResultList />:"" } 
+          </main>
+        </div>
+        </AppContext.Provider>
+      </BrowserRouter>
+    );
+  }
+
+}
+
+export default App; 
